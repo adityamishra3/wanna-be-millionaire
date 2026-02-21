@@ -18,7 +18,7 @@ model User{
   ideas Idea[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
 }
 
@@ -32,7 +32,7 @@ model Idea{
   ownerId String
   
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role{
