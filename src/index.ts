@@ -1,13 +1,16 @@
 import express, {Request, Response} from "express"
 import {ApiResponse} from "./types/apiResponse"
 import userRouter from './routes/user.routes'
+import authRouter from './routes/auth.routes'
+import { authMiddleware } from "./middlewares/auth.middleware"
 const app = express()
-const PORT = 3000
+const PORT = process.env.PORT || 3000
 
 app.use(express.json())
 
 
 app.use('/users', userRouter)
+app.use('/auth', authRouter)
 
 app.get('/health', (req: Request, res: Response)=>{
     const response: ApiResponse<string> = {
