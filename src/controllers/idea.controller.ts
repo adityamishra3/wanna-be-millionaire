@@ -65,3 +65,37 @@ export const createIdea = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+export const getAllIdeas = async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId as string;
+
+    const ideas = await prisma.idea.findMany({
+      orderBy: {
+        createdAt: 'desc', // Optional: Show newest first
+      },
+    });
+
+    const safeIdeas: SafeIdea[] = ideas.map((idea) => ({
+      id: idea.id,
+      title: idea.title,
+      content: idea.content,
+      isPublic: idea.isPublic,
+    }));
+
+    const response: ApiResponse<SafeIdea[]> = {
+      success: true,
+      message: "Ideas retrieved successfully",
+      data: safeIdeas,
+      module: "idea.controller",
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching ideas:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error" 
+    });
+  }
+};
