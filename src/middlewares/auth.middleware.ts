@@ -18,6 +18,7 @@ export const authMiddleware = async (
     const userId = await verifyToken(token);
     if (!userId) {
       res.status(401).json({ success: false, message: "User not found" });
+      return
     }
     req.userId = userId // its either a string or undefined type, as we have declared in the extended interface of Request (from express).
     next()
