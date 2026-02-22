@@ -3,6 +3,8 @@ import { Prisma } from "../../generated/prisma/client";
 import { ApiResponse } from "../types/apiResponse";
 import { SafeUser, UserWithIdeas} from "../types";
 import { Request, Response } from "express";
+import {hashPassword} from '../utils/hash'
+
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
@@ -34,6 +36,12 @@ export const getUsers = async (req: Request, res: Response) => {
 export const createUser = async (req: Request, res: Response) => {
   try {
     const body: Prisma.UserCreateInput = req.body
+    
+    // Adding hashing to the password for better security
+    const hashedPassword:string|boolean = await hashPassword(req.body.password)
+    if (!hashedPassword) throw new Error("Password couldn't be hashed")
+    
+    body.password = hashedPassword
     const user = await prisma.user.create({data:body})
     const safeUser: SafeUser = {id: user.id, username: user.username, email: user.email, role: user.role}
     const response: ApiResponse<SafeUser> = {
@@ -42,7 +50,7 @@ export const createUser = async (req: Request, res: Response) => {
       module: "user.controller",
       message: "User created successfully."
     }
-    res.status(200).json(response)
+    res.status(201).json(response)
   } catch (error) {
     console.error(`Error in createUser user.controller : ${error}`)
      res.status(500).json({ success: false, message: "Internal server error" });
