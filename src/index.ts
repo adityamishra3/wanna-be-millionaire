@@ -6,10 +6,16 @@ import ideaRouter from "./routes/idea.routes"
 import { authMiddleware } from "./middlewares/auth.middleware"
 import cookieParser from 'cookie-parser'
 import { errorMiddleware } from "./middlewares/error.middleware"
+import cors from 'cors'
+import helmet from 'helmet'
 const app = express()
 const PORT = process.env.PORT || 3000
 
-
+app.use(helmet())
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials:true // allows to send the cookie 
+}))
 app.use(express.json())
 app.use(cookieParser())
 
