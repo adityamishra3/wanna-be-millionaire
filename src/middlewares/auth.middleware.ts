@@ -1,30 +1,20 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt";
+import { ForbiddenError, UnauthorizedError } from "../utils/errors";
 
 export const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  try {
-    const token = req.cookies.token;
+  const token = req.cookies.token;
 
-    if (!token) {
-      res.status(401).json({ success: false, message: "No token provided" });
-      return;
-    }
+  if (!token) throw new UnauthorizedError("No token provided");
 
-    // call verifyToken and get the userId
-    const userId = await verifyToken(token);
-    if (!userId) {
-      res.status(401).json({ success: false, message: "User not found" });
-      return
-    }
-    req.userId = userId // its either a string or undefined type, as we have declared in the extended interface of Request (from express).
-    next()
+  // call verifyToken and get the userId
+  const userId = await verifyToken(token);
+  if (!userId) throw new UnauthorizedError("Invalid Token");
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Internal server error!" });
-  }
+  req.userId = userId; // its either a string or undefined type, as we have declared in the extended interface of Request (from express).
+  next();
 };

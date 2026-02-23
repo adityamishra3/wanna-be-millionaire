@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Role } from "../../generated/prisma/enums";
 import prisma from "../config/prisma";
+import { ForbiddenError, NotFoundError } from "../utils/errors";
 
 /*
 to pass a param to any middleware, we create a function that returns a middleware. 
@@ -27,20 +28,14 @@ Same concept — requireRole is a factory that creates middleware with the role 
 
 */
 export const requireRole = (role: Role) => {
-    return async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const user = await prisma.user.findUnique({
-                where: { id: req.userId }
-            })
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+    });
 
-            if (!user || user.role !== role) {
-                res.status(403).json({ success: false, message: "Forbidden" })
-                return
-            }
-            next()
-        } catch (error) {
-            console.error(error)
-            res.status(500).json({ success: false, message: "Internal server error" })
-        }
-    }
-}
+    if (!user) throw new NotFoundError("User not found");
+    if (user.role !== role) throw new ForbiddenError("Access denied")
+
+    next();
+  };
+};
