@@ -1,5 +1,5 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
-
+import logger from "./logger";
 const SECRET_KEY = process.env.JWT_SECRET || "fallback_secret";
 const REFRESH_SECRET =
   process.env.REFRESH_SECRET || "fallback_secret_for_refresh";
@@ -12,6 +12,7 @@ export const generateToken = async (
     });
     if (!token) throw new Error("Error while generating token");
     console.log("Generated token:", token);
+    logger.info(`Generated token successfully | Token: ${token}`)
     return token;
   } catch (error) {
     console.error(error);
@@ -28,7 +29,8 @@ export const verifyToken = async (
     if (!decoded.userId) throw new Error("Token not valid.");
     return decoded.userId;
   } catch (error) {
-    console.error(error, "Error from auth.middleware");
+    // console.error(error, "Error from auth.middleware");
+    logger.error(error, "Error from auth.middleware");
     return undefined;
   }
 };
@@ -41,7 +43,8 @@ export const generateRefreshToken = (userId: string):string|false => {
     if (!token) throw new Error("Error while generating token");
     return token;
   } catch (error) {
-    console.error(error);
+    // console.error(error);
+    logger.error(error, "Error from auth.middleware");
     return false;
   }
 };
@@ -56,7 +59,8 @@ export const verifyRefreshToken = async (
     if (!decoded.userId) throw new Error("Token not valid.");
     return decoded.userId;
   } catch (error) {
-    console.error(error, "Error from auth.middleware");
+    // console.error(error, "Error from auth.middleware");
+    logger.error(error, "Error from auth.middleware");
     return undefined;
   }
 };

@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser'
 import { errorMiddleware } from "./middlewares/error.middleware"
 import cors from 'cors'
 import helmet from 'helmet'
+import logger from "./utils/logger"
 const app = express()
 const PORT = process.env.PORT || 3000
 
@@ -35,5 +36,6 @@ app.get('/health', (req: Request, res: Response)=>{
 })
 
 app.listen(PORT, ()=>{
-    console.log("Server is running on port: ", PORT)
+    // console.log("Server is running on port: ", PORT)
+    logger.info(`Server is running on port: ${PORT}`)
 })
