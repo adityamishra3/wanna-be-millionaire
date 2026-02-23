@@ -7,47 +7,45 @@ datasource db {
   provider = "sqlite"
 }
 
-
-model User{
-  id String @id @default(uuid())
+model User {
+  id       String @id @default(uuid())
   username String @unique
-  email String @unique
+  email    String @unique
   password String
-  role Role @default(USER)
-  
-  ideas Idea[]
+  role     Role   @default(USER)
+
+  ideas         Idea[]
   refreshTokens RefreshToken[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@index([username, email])
 }
 
-model Idea{
-  id String @id @default(uuid())
-  title String
-  content String
+model Idea {
+  id       String  @id @default(uuid())
+  title    String
+  content  String
   isPublic Boolean @default(false)
 
-  owner User @relation(fields: [ownerId], references: [id]) /// this is how we map the relation of one table with another, here its one to many from owner to ideas
+  owner   User   @relation(fields: [ownerId], references: [id]) /// this is how we map the relation of one table with another, here its one to many from owner to ideas
   ownerId String
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model RefreshToken {
-  id String @id @default(uuid())
-  token String @unique
-  user User @relation(fields: [userId], references: [id])
+  id     String @id @default(uuid())
+  token  String @unique
+  user   User   @relation(fields: [userId], references: [id])
   userId String
 
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
 
-
-enum Role{
+enum Role {
   USER
   ADMIN
 }
