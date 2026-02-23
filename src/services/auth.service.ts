@@ -1,10 +1,10 @@
 import prisma from '../config/prisma'
-import { comparePassword } from '../utils/hash'
+import { comparePassword, hashPassword } from '../utils/hash'
 import { generateToken } from '../utils/jwt'
-import { SafeUser } from '../types'
-import { UnauthorizedError, NotFoundError } from '../utils/errors'
+import { LoginBody, SafeUser, RegisterBody } from '../types'
+import { UnauthorizedError, NotFoundError, AppError } from '../utils/errors'
 
-export const login = async (body: { email?: string, username?: string, password: string }): Promise<{ token: string, user: SafeUser }> => {
+export const login = async (body: LoginBody): Promise<{ token: string, user: SafeUser }> => {
     const user = await prisma.user.findFirst({
         where: {
             OR: [{ email: body.email }, { username: body.username }]
@@ -27,4 +27,25 @@ export const login = async (body: { email?: string, username?: string, password:
     }
 
     return { token, user: safeUser }
+}
+
+export const register = async (body:RegisterBody): Promise<{token:string, user:SafeUser}> => {
+    const hashedPassword = await hashPassword(body.password);
+    if (!hashedPassword) throw new AppError("Password hashing failed", 500)
+
+
+    const user = await prisma.user.create({
+        data: {...body, password: hashedPassword}
+    })
+
+    const token = await generateToken(user.id);
+    if (!token) throw new AppError("Token generation failed", 500);
+
+    const safeUser: SafeUser = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        username: user.username
+    }
+    return {token: token, user: safeUser}
 }

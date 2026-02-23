@@ -2,9 +2,15 @@ import { Request, Response } from 'express'
 import * as AuthService from '../services/auth.service'
 import { ApiResponse } from '../types/apiResponse'
 import { SafeUser } from '../types'
+import { loginSchema, registerSchema } from '../validations/auth.validations'
+import { AppError } from '../utils/errors'
 
 export const login = async (req: Request, res: Response) => {
-    const { token, user } = await AuthService.login(req.body)
+    // validate the request with zod
+    const result = loginSchema.safeParse(req.body)
+    if (!result.success) throw new AppError(result.error.message, 400);
+
+    const { token, user } = await AuthService.login(result.data)
 
     res.cookie('token', token, {
         httpOnly: true,
@@ -20,4 +26,26 @@ export const login = async (req: Request, res: Response) => {
     }
 
     res.json(response)
+}
+
+export const register = async (req: Request, res: Response) => {
+    const result = registerSchema.safeParse(req.body); // will strip any extra field
+    if (!result.success) throw new AppError(result.error.message, 400);
+
+    const {token, user} = await AuthService.register(result.data);
+
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: false, 
+        maxAge: 60*60*1000
+    })
+
+    const response: ApiResponse<SafeUser> = {
+        success: true,
+        message: "User registerd in successfully!",
+        data: user,
+        module: "auth.controller"
+    }
+
+    res.status(201).json(response)
 }

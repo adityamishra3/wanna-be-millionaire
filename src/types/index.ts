@@ -1,6 +1,7 @@
 import { Prisma } from "../../generated/prisma/client"
 import { Role } from "../../generated/prisma/enums"
-
+import {z} from 'zod'
+import { loginSchema, registerSchema } from "../validations/auth.validations"
 type SafeUser = {
     id : string
     username: string
@@ -20,5 +21,6 @@ type UserWithIdeas = Prisma.UserGetPayload<{
     include: {ideas: true}
 }>
 
-
-export type {SafeUser, SafeIdea,UserWithIdeas }
+type LoginBody = z.infer<typeof loginSchema>
+type RegisterBody = z.infer<typeof registerSchema>
+export type {SafeUser, SafeIdea,UserWithIdeas, LoginBody, RegisterBody }
