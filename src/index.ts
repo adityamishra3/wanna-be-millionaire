@@ -9,6 +9,7 @@ import { errorMiddleware } from "./middlewares/error.middleware"
 import cors from 'cors'
 import helmet from 'helmet'
 import logger from "./utils/logger"
+import path from 'path'
 const app = express()
 const PORT = process.env.PORT || 3000
 
@@ -17,6 +18,7 @@ app.use(cors({
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
     credentials:true // allows to send the cookie 
 }))
+app.use(express.static(path.join(__dirname, '../../dist')))
 app.use(express.json())
 app.use(cookieParser())
 
@@ -24,6 +26,10 @@ app.use('/users', userRouter)
 app.use('/auth', authRouter)
 app.use('/idea', authMiddleware, ideaRouter)
 
+
+app.get('/{*path}', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist', 'index.html'))
+})
 app.use(errorMiddleware)
 app.get('/health', (req: Request, res: Response)=>{
     const response: ApiResponse<string> = {

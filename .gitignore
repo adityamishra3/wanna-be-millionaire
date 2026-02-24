@@ -1,6 +1,6 @@
 # Node modules
 node_modules/
-dist/
+build/
 # Environment variables
 .env
 .env.local
