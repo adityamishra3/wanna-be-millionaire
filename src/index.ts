@@ -27,9 +27,11 @@ app.use('/auth', authRouter)
 app.use('/idea', authMiddleware, ideaRouter)
 
 
-app.get('/{*path}', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist', 'index.html'))
-})
+const distPath = process.env.NODE_ENV === 'production'
+    ? path.join(__dirname, '../../dist')
+    : path.join(__dirname, '../dist')
+
+app.use(express.static(distPath))
 app.use(errorMiddleware)
 app.get('/health', (req: Request, res: Response)=>{
     const response: ApiResponse<string> = {
