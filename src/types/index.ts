@@ -23,4 +23,15 @@ type UserWithIdeas = Prisma.UserGetPayload<{
 
 type LoginBody = z.infer<typeof loginSchema>
 type RegisterBody = z.infer<typeof registerSchema>
+
+export type PublicIdeasWithOwner = {
+    id: string
+    title: string
+    content: string
+    isPublic: boolean
+    owner: {
+        username: string
+    }
+}
+
 export type {SafeUser, SafeIdea,UserWithIdeas, LoginBody, RegisterBody }

@@ -49,3 +49,9 @@ export const register = async (body:RegisterBody): Promise<{token:string, user:S
     }
     return {token: token, user: safeUser}
 }
+
+export const getMe = async (userId: string): Promise<SafeUser> => {
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) throw new NotFoundError("User not found")
+    return { id: user.id, username: user.username, email: user.email, role: user.role }
+}

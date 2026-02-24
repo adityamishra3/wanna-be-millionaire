@@ -49,3 +49,13 @@ export const register = async (req: Request, res: Response) => {
 
     res.status(201).json(response)
 }
+
+export const logout = async (req:Request, res:Response) => {
+    res.clearCookie('token')
+    res.json({ success: true, message: "Logged out" })
+}
+
+export const getMe = async (req: Request, res: Response) => {
+    const user = await AuthService.getMe(req.userId!)
+    res.json({ success: true, data: user, message: "User fetched" })
+}

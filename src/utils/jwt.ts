@@ -11,11 +11,12 @@ export const generateToken = async (
       expiresIn: "1Hour",
     });
     if (!token) throw new Error("Error while generating token");
-    console.log("Generated token:", token);
-    logger.info(`Generated token successfully | Token: ${token}`)
+    // console.log("Generated token:", token);
+    // logger.info(`Generated token successfully | Token: ${token}`)
     return token;
   } catch (error) {
-    console.error(error);
+    // console.error(error);
+    logger.error(error);
     return false;
   }
 };
