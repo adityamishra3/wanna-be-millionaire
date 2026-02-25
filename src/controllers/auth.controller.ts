@@ -3,7 +3,8 @@ import * as AuthService from '../services/auth.service'
 import { ApiResponse } from '../types/apiResponse'
 import { SafeUser } from '../types'
 import { loginSchema, registerSchema } from '../validations/auth.validations'
-import { AppError } from '../utils/errors'
+import { AppError, UnauthorizedError } from '../utils/errors'
+import { blacklistToken } from '../utils/redis'
 
 export const login = async (req: Request, res: Response) => {
     // validate the request with zod
@@ -51,6 +52,8 @@ export const register = async (req: Request, res: Response) => {
 }
 
 export const logout = async (req:Request, res:Response) => {
+    if (!req.exp) throw new UnauthorizedError("Invalid token")
+    await blacklistToken(req.cookies.token, req.exp)
     res.clearCookie('token')
     res.json({ success: true, message: "Logged out" })
 }

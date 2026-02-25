@@ -1,9 +1,11 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 import logger from "./logger";
+import { AppError } from "./errors";
 const SECRET_KEY = process.env.JWT_SECRET || "fallback_secret";
 const REFRESH_SECRET =
   process.env.REFRESH_SECRET || "fallback_secret_for_refresh";
-export const generateToken = async (
+
+  export const generateToken = async (
   userId: string,
 ): Promise<string | false> => {
   try {
@@ -23,12 +25,12 @@ export const generateToken = async (
 
 export const verifyToken = async (
   token: string,
-): Promise<string | undefined> => {
+): Promise<TokenPayload | undefined> => {
   try {
     // verify the token
     const decoded = jwt.verify(token, SECRET_KEY) as JwtPayload;
-    if (!decoded.userId) throw new Error("Token not valid.");
-    return decoded.userId;
+    if (!decoded.userId) throw new AppError("Token not valid.", 401);
+    return  {userId: decoded.userId, exp: decoded.exp as number };
   } catch (error) {
     // console.error(error, "Error from auth.middleware");
     logger.error(error, "Error from auth.middleware");
