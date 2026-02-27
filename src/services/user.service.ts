@@ -26,12 +26,12 @@ export const getUsers = async (): Promise<SafeUser[]> => {
         include: { ideas: true }
     })
 
-    return users.map(user => ({
+    return users.map((user:any) => ({
         id: user.id,
         username: user.username,
         email: user.email,
         role: user.role,
-        ideas: user.ideas.map(idea => ({
+        ideas: user.ideas.map((idea:any) => ({
             id: idea.id,
             title: idea.title,
             content: idea.content,

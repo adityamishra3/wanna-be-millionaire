@@ -3,7 +3,7 @@ import prisma from "../config/prisma";
 import { PublicIdeasWithOwner, SafeIdea } from "../types";
 import logger from "../utils/logger";
 import { getCachedPublicIdeas, invalidatePublicIdeasCache, setCachedPublicIdeas } from "../utils/redis";
-
+import { getIO } from "../config/socket";
 export const getIdeasByUserId = async (userId: string): Promise<SafeIdea[]> => {
   const ideas = await prisma.idea.findMany({
     where: {
@@ -34,18 +34,23 @@ export const createIdea = async (
     },
   });
 
-  // deleting the cache of public ideas if the new idea is public.
-  if (idea.isPublic){
-    const cacheInvalidated = await invalidatePublicIdeasCache();
-    if (!cacheInvalidated) logger.warn("Cache invalidation failed for public ideas")
-  }
-
   const safeIdea: SafeIdea = {
     id: idea.id,
     title: idea.title,
     content: idea.content,
     isPublic: idea.isPublic,
   };
+
+  // deleting the cache of public ideas if the new idea is public.
+  if (safeIdea.isPublic){
+    const cacheInvalidated = await invalidatePublicIdeasCache();
+    if (!cacheInvalidated) logger.warn("Cache invalidation failed for public ideas");
+    
+    // emitting websockets event so that the idea can be added in the public vault as soon as its created.
+    const io = getIO()
+    io.emit('new_public_idea', safeIdea)
+  }
+
   return safeIdea;
 };
 
@@ -86,11 +91,27 @@ export const updateIdea = async (
 };
 
 export const deleteIdea = async (ideaId: string): Promise<boolean> => {
-  await prisma.idea.delete({
+  
+  const deletedIdea = await prisma.idea.delete({
     where: {
       id: ideaId,
     },
   });
+  const safeIdea: SafeIdea = {
+    id: deletedIdea.id,
+    title: deletedIdea.title,
+    content: deletedIdea.content,
+    isPublic: deletedIdea.isPublic,
+  };
+  if (deletedIdea.isPublic){
+    const cacheInvalidated = await invalidatePublicIdeasCache();
+    if (!cacheInvalidated) logger.warn("Cache invalidation failed for public ideas");
+    
+    // emitting another event so that if deleted idea is public, it can be removed from the vault
+    const io = getIO()
+    io.emit('delete_public_idea', safeIdea.id)
+    
+  }
   return true;
 };
 
