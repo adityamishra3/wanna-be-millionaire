@@ -1,6 +1,8 @@
 import { Prisma } from "../../generated/prisma/client";
 import prisma from "../config/prisma";
 import { PublicIdeasWithOwner, SafeIdea } from "../types";
+import logger from "../utils/logger";
+import { getCachedPublicIdeas, invalidatePublicIdeasCache, setCachedPublicIdeas } from "../utils/redis";
 
 export const getIdeasByUserId = async (userId: string): Promise<SafeIdea[]> => {
   const ideas = await prisma.idea.findMany({
@@ -31,6 +33,12 @@ export const createIdea = async (
       },
     },
   });
+
+  // deleting the cache of public ideas if the new idea is public.
+  if (idea.isPublic){
+    const cacheInvalidated = await invalidatePublicIdeasCache();
+    if (!cacheInvalidated) logger.warn("Cache invalidation failed for public ideas")
+  }
 
   const safeIdea: SafeIdea = {
     id: idea.id,
@@ -87,6 +95,10 @@ export const deleteIdea = async (ideaId: string): Promise<boolean> => {
 };
 
 export const getPublicIdeas = async (): Promise<PublicIdeasWithOwner[]> => {
+  // first we will hit the cache.
+  const cachedIdeas = await getCachedPublicIdeas();
+  if (cachedIdeas) return cachedIdeas;
+
   const ideas = await prisma.idea.findMany({
     where: {
       isPublic: true,
@@ -104,6 +116,8 @@ export const getPublicIdeas = async (): Promise<PublicIdeasWithOwner[]> => {
       username: idea.owner.username,
     },
   }));
+  // storing ideas in cache.
+  await setCachedPublicIdeas(publicIdeas);
 
   return publicIdeas;
 };
