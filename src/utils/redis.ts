@@ -26,7 +26,11 @@ export const getCachedPublicIdeas = async () : Promise<PublicIdeasWithOwner[] | 
 }
 
 export const invalidatePublicIdeasCache = async (): Promise<boolean> => {
-    const deletedCount = await redis.del('publicIdeas');
-    logger.info(`Deleted public ideas. redis returned: ${deletedCount}`);
-    return deletedCount? true: false
+    const deletedCount = await redis.del('publicIdeas')
+    if (deletedCount) {
+        logger.info(`Public ideas cache invalidated`)
+    } else {
+        logger.info(`No cache to invalidate — already empty`)
+    }
+    return true  // always return true, cache miss is not an error
 }

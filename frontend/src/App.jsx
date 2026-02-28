@@ -722,9 +722,14 @@ function Dashboard({ user, onLogout }) {
         return prev.filter((idea) => idea.id != ideaId);
       });
     });
+
+    socket.on("idea_notification", (message) => {
+      notify(message); //existing toast function!
+    });
     return () => {
       socket.off("new_public_idea"); // remove listener on unmount, otherwise, when user closes the tab and comes back here, a new socket will be connected, and so on.
       socket.off("delete_public_idea"); // remove listener on unmount
+      socket.off('idea_notification')
     };
   }, []);
 

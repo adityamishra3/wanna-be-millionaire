@@ -11,7 +11,11 @@ import helmet from 'helmet'
 import logger from "./utils/logger"
 import path from 'path'
 import { createServer } from "http"
-import { initSocket } from "./config/socket"
+import { getIO, initSocket } from "./config/socket"
+import { initPubSub, subscriber } from "./config/pubsub"
+import { PublicIdeasWithOwner } from "./types"
+
+
 const app = express()
 const server = createServer(app);
 const io = initSocket(server)
@@ -48,9 +52,21 @@ app.get('/health', (req: Request, res: Response)=>{
     res.json(response)
 })
 
-// changing from app to server so that we can attach our websocket to it as well, since app is just for http request, server has both, app and socket
 
-server.listen(PORT, ()=>{
-    // console.log("Server is running on port: ", PORT)
-    logger.info(`Server is running on port: ${PORT}`)
-})
+async function main() {
+    await initPubSub();
+    
+    await subscriber.subscribe('public-ideas', (message) => {
+        const idea:PublicIdeasWithOwner = JSON.parse(message)
+        const io = getIO()
+        io.emit('new_public_idea', idea)
+        io.emit('idea_notification', `💡 New idea: "${idea.title}" by ${idea.owner.username}`)
+    })
+    
+    // changing from app to server so that we can attach our websocket to it as well, since app is just for http request, server has both, app and socket
+    server.listen(PORT, () => {
+        logger.info(`Server is running on port: ${PORT}`)
+    })
+}
+
+main()
