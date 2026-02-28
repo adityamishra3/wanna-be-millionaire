@@ -14,7 +14,7 @@ import { createServer } from "http"
 import { getIO, initSocket } from "./config/socket"
 import { initPubSub, subscriber } from "./config/pubsub"
 import { PublicIdeasWithOwner } from "./types"
-
+import { createRateLimitMiddleware } from "./utils/limiter"
 
 const app = express()
 const server = createServer(app);
@@ -31,7 +31,8 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(cookieParser())
-
+const appLevelLimiter = createRateLimitMiddleware()
+app.use(appLevelLimiter)
 app.use('/users', userRouter)
 app.use('/auth', authRouter)
 app.use('/idea', authMiddleware, ideaRouter)
