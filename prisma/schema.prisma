@@ -14,6 +14,7 @@ model User {
   password String
   role     Role   @default(USER)
 
+  likes Like[]
   ideas         Idea[]
   refreshTokens RefreshToken[]
   createdAt     DateTime       @default(now())
@@ -27,12 +28,25 @@ model Idea {
   title    String
   content  String
   isPublic Boolean @default(false)
+  likes Like[]
 
-  owner   User   @relation(fields: [ownerId], references: [id]) /// this is how we map the relation of one table with another, here its one to many from owner to ideas
+  owner   User   @relation(fields: [ownerId], references: [id]) // this is how we map the relation of one table with another, here its one to many from owner to ideas
   ownerId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+model Like {
+    id String @id @default(uuid())
+    userId String
+    ideaId String
+
+    user User @relation(fields: [userId], references: [id])
+    idea Idea @relation(fields: [ideaId], references: [id])
+
+    @@unique([userId, ideaId]) //compose unique constraint.
 }
 
 model RefreshToken {

@@ -159,3 +159,26 @@ export const getPublicIdeas = async (): Promise<PublicIdeasWithOwner[]> => {
 
   return publicIdeas;
 };
+
+
+export const likeIdea = async (ideaId: string, userId: string) => {
+  const like = await prisma.like.create({
+    data: {
+      ideaId: ideaId,
+      userId: userId
+    }
+  })
+  return like;
+}
+
+export const deleteLike = async (ideaId: string, userId: string) => {
+  const deletedLike = await prisma.like.delete({
+    where: {
+      userId_ideaId: {
+        userId: userId,
+        ideaId: ideaId,
+      },
+    },
+  });
+  return deletedLike;
+}

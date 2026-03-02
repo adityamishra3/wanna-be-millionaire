@@ -73,3 +73,27 @@ export const getPublicIdeas = async (req: Request, res: Response) => {
   };
   res.status(200).json(response);
 }
+
+export const likeIdea = async (req: Request, res: Response) => {
+  const ideaId = req.params.id as string;
+  const userId = req.userId as string;
+  const like = await IdeaServices.likeIdea(ideaId, userId);
+  const response:ApiResponse<string> = {
+    success: true,
+    message: "Idea Liked successfully",
+    data: "Idea liked",
+    module: "idea.controller"
+  }
+  res.status(201).json(response)
+}
+
+export const deleteLike = async (req: Request, res: Response) => {
+  const likeDeleted = await IdeaServices.deleteLike(req.params.id as string, req.userId as string)
+  const response: ApiResponse<{id: string, userId: string, ideaId: string}> = {
+    success: true,
+    message: "Idea unliked successfully",
+    data: likeDeleted,
+    module:"idea.controller"
+  }
+  res.status(200).json(response)
+}
