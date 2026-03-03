@@ -15,6 +15,8 @@ type SafeIdea = {
     title: string
     content: string
     isPublic: boolean
+    likeCount?: number
+    isLikedByMe?: boolean
 }
 
 type UserWithIdeas = Prisma.UserGetPayload<{
@@ -32,6 +34,8 @@ export type PublicIdeasWithOwner = {
     owner: {
         username: string
     }
+    likeCount?: number,
+    isLikedByMe?: boolean
 }
 
 export type {SafeUser, SafeIdea,UserWithIdeas, LoginBody, RegisterBody }

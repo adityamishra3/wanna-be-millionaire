@@ -64,7 +64,7 @@ export const deleteIdea = async (req:Request, res: Response) => {
 }
 
 export const getPublicIdeas = async (req: Request, res: Response) => {
-  const safePublicIdeas : PublicIdeasWithOwner[] = await IdeaServices.getPublicIdeas();
+  const safePublicIdeas : PublicIdeasWithOwner[] = await IdeaServices.getPublicIdeas(req.userId as string);
   const response: ApiResponse<PublicIdeasWithOwner[]> = {
     success: true,
     message: "Ideas fetched successfully",
